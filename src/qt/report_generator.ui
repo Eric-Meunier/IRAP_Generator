@@ -17,6 +17,9 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QTableWidget" name="table">
+      <property name="sizeAdjustPolicy">
+       <enum>QAbstractScrollArea::AdjustToContents</enum>
+      </property>
       <property name="sortingEnabled">
        <bool>true</bool>
       </property>
@@ -25,6 +28,9 @@
       </attribute>
       <attribute name="verticalHeaderVisible">
        <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderDefaultSectionSize">
+       <number>60</number>
       </attribute>
       <column>
        <property name="text">
@@ -58,7 +64,7 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QComboBox" name="comboBox">
+        <widget class="QComboBox" name="month_cbox">
          <item>
           <property name="text">
            <string>January</string>
@@ -122,14 +128,17 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QComboBox" name="year_cbox"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="update_table_btn">
          <property name="text">
           <string>Update Table</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_2">
+        <widget class="QPushButton" name="generate_files_btn">
          <property name="text">
           <string>Generate Files</string>
          </property>
@@ -149,8 +158,20 @@
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionGoogle_Sheets_ID"/>
+   </widget>
+   <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionGoogle_Sheets_ID">
+   <property name="text">
+    <string>Google Sheets ID</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

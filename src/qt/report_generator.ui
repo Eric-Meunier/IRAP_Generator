@@ -162,6 +162,7 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionEmployee_Name"/>
     <addaction name="actionGoogle_Sheets_ID"/>
    </widget>
    <addaction name="menuFile"/>
@@ -170,6 +171,11 @@
   <action name="actionGoogle_Sheets_ID">
    <property name="text">
     <string>Google Sheets ID</string>
+   </property>
+  </action>
+  <action name="actionEmployee_Name">
+   <property name="text">
+    <string>Employee Name</string>
    </property>
   </action>
  </widget>

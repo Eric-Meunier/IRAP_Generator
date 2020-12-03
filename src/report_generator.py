@@ -81,6 +81,7 @@ class ReportGenerator(QMainWindow, generator_ui):
         self.df = pd.DataFrame()
         self.employee = open("..//employee.txt", "r").read()
         self.sheet_id = open('..//sheet.id', 'r').read()
+        self.total_hours = None
 
         # Add every year from 2020 to the current year as drop downs
         for year in range(2020, datetime.today().year + 1):
@@ -204,6 +205,21 @@ class ReportGenerator(QMainWindow, generator_ui):
     def generate_files(self):
 
         def table_to_dataframe():
+
+            def get_hours(row):
+                # Write SAT or SUN if the day is a weekend
+                if row.Date.weekday() == 5:
+                    hours = 'SAT'
+                elif row.Date.weekday() == 6:
+                    hours = 'SUN'
+                elif row.Holiday is True:
+                    print(row.Holiday)
+                    hours = 'Holiday'
+                else:
+                    hours = row.Hours
+
+                return hours
+
             number_of_rows = self.table.rowCount()
             number_of_columns = self.table.columnCount()
 
@@ -231,6 +247,9 @@ class ReportGenerator(QMainWindow, generator_ui):
             df.rename(columns={' Statutory Holiday': 'Holiday'}, inplace=True)
             df.Holiday.replace(np.nan, False, inplace=True)
             df.Holiday = df.Holiday.astype(bool)
+
+            self.total_hours = df.Hours.astype(float).sum()
+            df.Hours = df.apply(get_hours, axis=1)
             return df
 
         def save_timesheet():
@@ -251,17 +270,7 @@ class ReportGenerator(QMainWindow, generator_ui):
                 cell = sheet.range(cells_dict[str(row.Date.day)])
                 # data_row = self.df.loc[self.df.Date == row.Date]
 
-                # Write SAT or SUN if the day is a weekend
-                if row.Date.weekday() == 5:
-                    cell.value = 'SAT'
-                elif row.Date.weekday() == 6:
-                    cell.value = 'SUN'
-                elif row.Holiday is True:
-                    print(row.Holiday)
-                    cell.value = 'Holiday'
-                else:
-                    hours = row.Hours
-                    cell.value = hours
+                cell.value = row.Hours
 
             # Add the hyphen for days shorter than 31
             if len(data) < 31:
@@ -291,22 +300,35 @@ class ReportGenerator(QMainWindow, generator_ui):
 
         def save_worklog():
             """Create and save the worklog"""
+
+            def row_to_dict(row):
+                d = {
+                    'Date': str(row.Date.day),
+                    'Hours': str(row.Hours),
+                    'Description': row.Description,
+                    'Task': ''
+                }
+                return d
+
             template = r'../worklog_template.docx'
 
             document = MailMerge(template)
-            print(document.get_merge_fields())
 
             # Fill the header
             document.merge(
                 Name=self.employee,
                 Year=year,
                 Month=month,
-                Total_hours='',
+                Total_hours=str(self.total_hours),
             )
 
             # Fill the table
+            data.Hours = data.Hours.replace(np.nan, 0)
+            table_dict = data.replace(np.nan, '').apply(row_to_dict, axis=1)
+            document.merge_rows('Date', table_dict)
 
             document.write(f"{month} {year} IRAP Worklog.docx")
+            os.startfile(f"{month} {year} IRAP Worklog.docx")
             print(f"Worklog save successful.")
 
         print(f"Generating files")
@@ -318,13 +340,14 @@ class ReportGenerator(QMainWindow, generator_ui):
         # if not folder:
         #     return
 
+        global data
         data = table_to_dataframe()
 
-        try:
-            save_timesheet()
-        except Exception as e:
-            self.err_msg.showMessage(f"Error occurred creating the time sheet: {e}.")
-            return
+        # try:
+        #     save_timesheet()
+        # except Exception as e:
+        #     self.err_msg.showMessage(f"Error occurred creating the time sheet: {e}.")
+        #     return
 
         try:
             save_worklog()

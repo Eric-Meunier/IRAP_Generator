@@ -15,7 +15,6 @@ from PyQt5 import (QtGui, QtCore, uic)
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QTableWidgetItem, QInputDialog, QErrorMessage, QFileDialog,
                              QLineEdit)
 
-
 # Modify the paths for when the script is being run in a frozen state (i.e. as an EXE)
 if getattr(sys, 'frozen', False):
     application_path = sys.executable
@@ -26,6 +25,7 @@ else:
     generator_ui_file = os.path.join(application_path, 'qt\\report_generator.ui')
     icons_path = os.path.join(application_path, "qt\\icons")
 
+print(f"Application path: {application_path}")
 # Load Qt ui file into a class
 generator_ui, _ = uic.loadUiType(generator_ui_file)
 
@@ -40,8 +40,8 @@ def get_sheet_df(sheet_id):
     # global values_input, service
     print("Retrieving sheet data")
     creds = None
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
+    if os.path.exists(os.path.join(application_path, 'token.pickle')):
+        with open(os.path.join(application_path, 'token.pickle'), 'rb') as token:
             creds = pickle.load(token)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -50,7 +50,7 @@ def get_sheet_df(sheet_id):
             flow = InstalledAppFlow.from_client_secrets_file(
                 '..//credentials.json', SCOPES)  # here enter the name of your downloaded JSON file
             creds = flow.run_local_server(port=0)
-        with open('token.pickle', 'wb') as token:
+        with open(os.path.join(application_path, 'token.pickle'), 'wb') as token:
             pickle.dump(creds, token)
 
     service = build('sheets', 'v4', credentials=creds)
@@ -75,12 +75,14 @@ class ReportGenerator(QMainWindow, generator_ui):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.setWindowTitle("IRAP Report Generator")
+        self.setWindowIcon(QtGui.QIcon(os.path.join(icons_path, 'icon.png')))
         self.err_msg = QErrorMessage()
         self.table.setColumnWidth(0, 200)
 
         self.df = pd.DataFrame()
-        self.employee = open("..//employee.txt", "r").read()
-        self.sheet_id = open('..//sheet.id', 'r').read()
+        self.employee = open(os.path.join(application_path, "..//employee.txt"), "r").read()
+        self.sheet_id = open(os.path.join(application_path, '..//sheet.id'), 'r').read()
         self.total_hours = None
 
         # Add every year from 2020 to the current year as drop downs
@@ -107,12 +109,13 @@ class ReportGenerator(QMainWindow, generator_ui):
                                                 self.employee)
 
         if ok_pressed:
-            id_file = open("..//employee.txt", "w+")
+            id_file = open(os.path.join(application_path, "..//employee.txt"), "w+")
             id_file.write(name)
-            print(f"New employee name: {open('..//employee.txt', 'r').read()}")
+            print(f"New employee name: {open(os.path.join(application_path, '..//employee.txt'), 'r').read()}")
             id_file.close()
 
             self.employee = name
+            self.statusBar().showMessage(f"Employee name changed to {name}.", 1000)
 
     def update_sheets_id(self):
         sheet_id, ok_pressed = QInputDialog.getText(self, 'Google Sheets ID', 'Enter Google Sheets ID:',
@@ -120,15 +123,15 @@ class ReportGenerator(QMainWindow, generator_ui):
                                                     self.sheet_id)
 
         if ok_pressed:
-            id_file = open("..//sheet.id", "w+")
+            id_file = open(os.path.join(application_path, "..//sheet.id"), "w+")
             id_file.write(sheet_id)
-            print(f"New sheet ID: {open('..//sheet.id', 'r').read()}")
+            print(f"New sheet ID: {open(os.path.join(application_path, '..//sheet.id'), 'r').read()}")
             id_file.close()
 
             self.sheet_id = sheet_id
+            self.statusBar().showMessage(f"Sheet ID changed to {sheet_id}.", 1000)
 
     def update_data(self):
-
         print("Updating sheet data")
         try:
             self.df = get_sheet_df(self.sheet_id)
@@ -173,14 +176,6 @@ class ReportGenerator(QMainWindow, generator_ui):
             item.setFlags(item.flags() ^ QtCore.Qt.ItemIsEditable)
             self.table.setItem(day - 1, 0, item)
 
-            # # Color the background of weekends gray
-            # if date.weekday() in [5, 6]:
-            #     for j in range(self.table.columnCount()):
-            #         self.table.item(day - 1, j).setBackground(QtGui.QColor(125, 125, 125))
-            # else:
-            #     for j in range(self.table.columnCount()):
-            #         self.table.item(day - 1, j).setBackground(QtGui.QColor(255, 255, 255))
-
         df = self.format_df(self.df, month, year)
         if not df.empty:
             # Add the description and IRAP hours
@@ -201,6 +196,7 @@ class ReportGenerator(QMainWindow, generator_ui):
                         # continue
 
         self.table.resizeRowsToContents()
+        self.statusBar().showMessage(f"Table updated.", 1000)
 
     def generate_files(self):
 
@@ -262,7 +258,7 @@ class ReportGenerator(QMainWindow, generator_ui):
                           '29': 'M22', '30': 'M23', '31': 'M24'}
 
             excel_app = xw.App(visible=False)
-            excel_file = excel_app.books.open(r'../timesheet_template.xlsx')
+            excel_file = excel_app.books.open(os.path.join(application_path, r'../timesheet_template.xlsx'))
             sheet = excel_file.sheets('Sheet1')
 
             # Fill the hours
@@ -279,6 +275,8 @@ class ReportGenerator(QMainWindow, generator_ui):
                     cell = sheet.range(cells_dict[str(len(data) + (i + 1))])
                     cell.value = '-'
 
+            # Add the employee name
+            sheet.range('E10').value = self.employee
             # Add the month and year
             sheet.range('K10').value = month
             sheet.range('N10').value = year
@@ -310,7 +308,7 @@ class ReportGenerator(QMainWindow, generator_ui):
                 }
                 return d
 
-            template = r'../worklog_template.docx'
+            template = os.path.join(application_path, r'../worklog_template.docx')
 
             document = MailMerge(template)
 
@@ -336,25 +334,26 @@ class ReportGenerator(QMainWindow, generator_ui):
         month = self.month_cbox.currentText()
         year = self.year_cbox.currentText()
 
-        # folder = QFileDialog.getExistingDirectory(self, "Selected Output Folder")
-        # if not folder:
-        #     return
+        folder = QFileDialog.getExistingDirectory(self, "Selected Output Folder")
+        if not folder:
+            return
 
         global data
         data = table_to_dataframe()
 
-        # try:
-        #     save_timesheet()
-        # except Exception as e:
-        #     self.err_msg.showMessage(f"Error occurred creating the time sheet: {e}.")
-        #     return
+        try:
+            save_timesheet()
+        except Exception as e:
+            self.err_msg.showMessage(f"Error occurred creating the time sheet: {e}.")
+            return
 
         try:
             save_worklog()
         except Exception as e:
             self.err_msg.showMessage(f"Error occurred creating the work log: {e}.")
             return
-        # self.statusBar().showMessage(f"Save complete. Files saved to {folder}", 2000)
+
+        self.statusBar().showMessage(f"Save complete. Files saved to {folder}.", 2000)
 
 
 if __name__ == '__main__':

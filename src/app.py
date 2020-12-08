@@ -1,3 +1,4 @@
+from flask import Flask, render_template
 import pandas as pd
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -15,23 +16,8 @@ from PyQt5 import (QtGui, QtCore, uic)
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QTableWidgetItem, QInputDialog, QErrorMessage, QFileDialog,
                              QLineEdit)
 
-# Modify the paths for when the script is being run in a frozen state (i.e. as an EXE)
-if getattr(sys, 'frozen', False):
-    application_path = sys.executable
-    generator_ui_file = 'qt\\report_generator.ui'
-    icons_path = 'qt\\icons'
-else:
-    application_path = os.path.dirname(os.path.abspath(__file__))
-    generator_ui_file = os.path.join(application_path, 'qt\\report_generator.ui')
-    icons_path = os.path.join(application_path, "qt\\icons")
-
-print(f"Application path: {application_path}")
-# Load Qt ui file into a class
-generator_ui, _ = uic.loadUiType(generator_ui_file)
-
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
-# here enter the id of your google sheet
 # SAMPLE_SPREADSHEET_ID_input = open('..//sheet.id', 'r').read()
 SAMPLE_RANGE_NAME = 'A3:Q368'  # 1 year of rows
 
@@ -40,8 +26,8 @@ def get_sheet_df(sheet_id):
     # global values_input, service
     print("Retrieving sheet data")
     creds = None
-    if os.path.exists(os.path.join(application_path, 'token.pickle')):
-        with open(os.path.join(application_path, 'token.pickle'), 'rb') as token:
+    if os.path.exists('token.pickle'):
+        with open('token.pickle', 'rb') as token:
             creds = pickle.load(token)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -50,7 +36,7 @@ def get_sheet_df(sheet_id):
             flow = InstalledAppFlow.from_client_secrets_file(
                 '..//credentials.json', SCOPES)  # here enter the name of your downloaded JSON file
             creds = flow.run_local_server(port=0)
-        with open(os.path.join(application_path, 'token.pickle'), 'wb') as token:
+        with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
 
     service = build('sheets', 'v4', credentials=creds)
@@ -365,3 +351,14 @@ if __name__ == '__main__':
     lc.generate_files()
 
     app.exec_()
+
+app = Flask(__name__)
+
+
+@app.route("/")
+def table():
+    return render_template('table.html')
+
+
+if __name__ == '__main__':
+    app.run(debug=1)

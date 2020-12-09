@@ -9,6 +9,7 @@ import calendar
 import re
 import xlwings as xw
 import numpy as np
+import pyqtgraph as pg
 from mailmerge import MailMerge
 from datetime import datetime
 from PyQt5 import (QtGui, QtCore, uic)
@@ -292,11 +293,11 @@ class ReportGenerator(QMainWindow, generator_ui):
             sheet.range('I28').value = num_weekdays * 7.5
 
             # excel_file.save(f"{folder}\\{month} {year} IRAP Time Sheet.xlsx")
-            excel_file.save(f"{month} {year} IRAP Time Sheet.xlsx")
+            excel_file.save(f"{folder}/{month} {year} IRAP Time Sheet.xlsx")
             excel_file.close()
             print(f"Time Sheet save successful.")
 
-            os.startfile(f"{month} {year} IRAP Time Sheet.xlsx")
+            # os.startfile(f"{month} {year} IRAP Time Sheet.xlsx")
 
         def save_worklog():
             """Create and save the worklog"""
@@ -327,8 +328,9 @@ class ReportGenerator(QMainWindow, generator_ui):
             table_dict = data.replace(np.nan, '').apply(row_to_dict, axis=1)
             document.merge_rows('Date', table_dict)
 
-            document.write(f"{month} {year} IRAP Worklog.docx")
-            os.startfile(f"{month} {year} IRAP Worklog.docx")
+            document.write(f"{folder}/{month} {year} IRAP Worklog.docx")
+            document.close()
+            # os.startfile(f"{month} {year} IRAP Worklog.docx")
             print(f"Worklog save successful.")
 
         print(f"Generating files")

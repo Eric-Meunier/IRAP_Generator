@@ -184,15 +184,17 @@ class ReportGenerator(QMainWindow, generator_ui):
                 comments = row.Comments.split('\n')
 
                 for comment in comments:
-                    irap_re = re.search(r'IRAP:(.*)[({[](.*)[)\]}]\.', comment, re.IGNORECASE)
-                    if irap_re:
-                        comment = irap_re.group(1).strip()
-                        hours = irap_re.group(2).strip()
+                    research_comment = re.search(r'research:(.*)[({[](.*)[)\]}]\.', comment, flags=re.I)
+                    if research_comment:
+                        if 'irap' in research_comment.group(0).lower():
+                            comment = research_comment.group(1).strip()
+                            comment = re.sub(r'\(irap\) ', '', comment, flags=re.I)  # Remove (IRAP)
+                            hours = research_comment.group(2).strip()
 
-                        hours_item = QTableWidgetItem(hours)
-                        hours_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
-                        self.table.setItem(row.Date.day - 1, 3, QTableWidgetItem(f"{comment}."))
-                        self.table.setItem(row.Date.day - 1, 1, hours_item)
+                            hours_item = QTableWidgetItem(hours)
+                            hours_item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+                            self.table.setItem(row.Date.day - 1, 3, QTableWidgetItem(f"{comment}."))
+                            self.table.setItem(row.Date.day - 1, 1, hours_item)
                         # continue
 
         self.table.resizeRowsToContents()
@@ -362,6 +364,6 @@ if __name__ == '__main__':
     lc = ReportGenerator()
     lc.show()
 
-    lc.generate_files()
+    # lc.generate_files()
 
     app.exec_()

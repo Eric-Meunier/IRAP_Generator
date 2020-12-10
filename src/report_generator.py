@@ -9,7 +9,6 @@ import calendar
 import re
 import xlwings as xw
 import numpy as np
-import pyqtgraph as pg
 from mailmerge import MailMerge
 from datetime import datetime
 from PyQt5 import (QtGui, QtCore, uic)
@@ -30,16 +29,14 @@ print(f"Application path: {application_path}")
 # Load Qt ui file into a class
 generator_ui, _ = uic.loadUiType(generator_ui_file)
 
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-
-# here enter the id of your google sheet
-# SAMPLE_SPREADSHEET_ID_input = open('..//sheet.id', 'r').read()
-SAMPLE_RANGE_NAME = 'A3:Q368'  # 1 year of rows
-
 
 def get_sheet_df(sheet_id):
     # global values_input, service
     print("Retrieving sheet data")
+
+    scopes = ['https://www.googleapis.com/auth/spreadsheets']
+    sample_range_name = 'A3:Q368'  # 1 year of rows
+
     creds = None
     if os.path.exists(os.path.join(application_path, 'token.pickle')):
         with open(os.path.join(application_path, 'token.pickle'), 'rb') as token:
@@ -49,7 +46,7 @@ def get_sheet_df(sheet_id):
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                '..//credentials.json', SCOPES)  # here enter the name of your downloaded JSON file
+                '..//credentials.json', scopes)  # here enter the name of your downloaded JSON file
             creds = flow.run_local_server(port=0)
         with open(os.path.join(application_path, 'token.pickle'), 'wb') as token:
             pickle.dump(creds, token)
@@ -59,7 +56,7 @@ def get_sheet_df(sheet_id):
     # Call the Sheets API
     sheet = service.spreadsheets()
     result_input = sheet.values().get(spreadsheetId=sheet_id,
-                                      range=SAMPLE_RANGE_NAME).execute()
+                                      range=sample_range_name).execute()
     values_input = result_input.get('values', [])
 
     if not values_input:

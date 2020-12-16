@@ -163,7 +163,7 @@ def generate_files():
         # Create a copy of the template and place it in the same dir as app.py,
         #  or else there are "Member not found" errors
         file_name = f"{name} {month} {year} IRAP Time Sheet.xlsx"
-        shutil.copy(r'../timesheet_template.xlsx', file_name)
+        shutil.copy(r'../templates/timesheet_template.xlsx', file_name)
         
         # Create the excel object
         excel_app = xw.App(visible=False)  # This prevents the file from opening
@@ -214,7 +214,7 @@ def generate_files():
             }
             return d
 
-        template = r'../worklog_template.docx'
+        template = r'../templates/worklog_template.docx'
 
         document = MailMerge(template)
 

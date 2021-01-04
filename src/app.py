@@ -96,7 +96,6 @@ def update_data():
             elif row.Date.weekday() == 6:
                 hours = 'SUN'
             elif row.Holiday is True:
-                print(row.Holiday)
                 hours = 'Holiday'
             else:
                 hours = row.Hours
@@ -227,7 +226,7 @@ def generate_files():
         )
 
         # Fill the table
-        print(f"IRAP df hours: {irap_df.Hours}")
+        # print(f"IRAP df hours: {irap_df.Hours}")
         irap_df.Hours = irap_df.Hours.replace(np.nan, 0)
         table_dict = irap_df.replace(np.nan, '').apply(row_to_dict, axis=1)
         document.merge_rows('Date', table_dict)
@@ -282,7 +281,6 @@ if st.button('Update Data'):
     irap_df, total_hours = update_data()
     draw_table(irap_df)
     st.write(f"Total IRAP hours: {total_hours}")
-    print(f"IRAP df after update: {irap_df}")
 
 if st.button('Generate Files'):
     generate_files()

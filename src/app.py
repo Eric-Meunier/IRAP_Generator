@@ -76,10 +76,10 @@ def update_data():
                 if research_comment:
                     if 'irap' in research_comment.group(0).lower():
                         comment = research_comment.group(1).strip()
-                        comment = re.sub(r'\(irap\) ', '', comment, flags=re.I)  # Remove (IRAP)
+                        comment = re.sub(r'\(irap\)', '', comment, flags=re.I)  # Remove (IRAP)
                         hours = research_comment.group(2).strip()
 
-                        irap_row['Comments'] = comment
+                        irap_row['Comments'] = f"{comment.strip()}."
                         irap_row['Hours'] = hours
 
             return irap_row

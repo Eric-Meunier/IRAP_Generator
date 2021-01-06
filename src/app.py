@@ -12,6 +12,7 @@ import xlwings as xw
 from mailmerge import MailMerge
 from datetime import datetime
 import shutil
+import pythoncom
 
 
 def get_sheet_df(sheet_id):
@@ -165,8 +166,9 @@ def generate_files():
         shutil.copy(r'../templates/timesheet_template.xlsx', file_name)
         
         # Create the excel object
+        pythoncom.CoInitialize()  # Required to avoid "CoInitialize has not been called" error.
         excel_app = xw.App(visible=False)  # This prevents the file from opening
-        excel_file = xw.Book(file_name)
+        excel_file = excel_app.books.open(file_name)
         sheet = excel_file.sheets('Sheet1')
 
         # Fill the hours

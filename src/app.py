@@ -259,7 +259,7 @@ title = st.title(f"IRAP Time Sheet & Worklog Generator")
 # Text inputs for timesheet ID and employee name
 name = st.sidebar.selectbox("Name", ['Eric Meunier', 'Dave Campbell'], index=0)
 default_sheet_id = '183TvCEIn3R9rsqCuseDtcGVtUVIPxO8a_fCg0iHlAhY' if \
-    name == 'Eric Meunier' else ''
+    name == 'Eric Meunier' else '1WBizXmsAGYNiLdVf-znRxX2JH3Z2DijETQd7ceaYVo0'
 sheet_id = st.sidebar.text_input("Timesheet ID", default_sheet_id)
 
 # Add dropdown options for year

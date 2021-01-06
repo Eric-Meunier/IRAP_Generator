@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/IRAP.iml" filepath="$PROJECT_DIR$/.idea/IRAP.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/IRAP_Generator.iml" filepath="$PROJECT_DIR$/.idea/IRAP_Generator.iml" />
     </modules>
   </component>
 </project>

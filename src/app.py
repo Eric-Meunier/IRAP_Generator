@@ -61,7 +61,6 @@ def update_data():
         :param df: DataFrame of timesheet
         :return: DataFrame
         """
-
         def get_irap_info(row):
             """"Filter a data frame to only include IRAP information"""
             irap_row = {'Date': row.Date,
@@ -114,11 +113,13 @@ def update_data():
         global month_index
         month_index = months.index(month)
         df = df[df.Date.map(lambda x: x.month == month_index + 1 and x.year == int(year))]
+        if df.empty:
+            return df, 0
         df.insert(1, 'Hours', '')
         df.fillna('', inplace=True)
 
         # Add the description and IRAP hours
-        df = pd.DataFrame(df.apply(get_irap_info, axis=1).to_list())
+        df = pd.DataFrame(df.apply(get_irap_info, axis=1).to_numpy())
         total_hours = df.Hours.replace('', 0).astype(float).sum()
         df.Hours = df.apply(get_hours, axis=1)
 
@@ -136,10 +137,13 @@ def update_data():
 
 
 def draw_table(data):
-    # Create the table
-    table_df = data.loc[:, ['Date', 'Hours', 'Comments']].copy()
-    table_df.set_index('Date').sort_index(ascending=True)
-    st.table(table_df)
+    if data.empty:
+        st.write(f"No data found.")
+    else:
+        # Create the table
+        table_df = data.loc[:, ['Date', 'Hours', 'Comments']].copy()
+        table_df.set_index('Date').sort_index(ascending=True)
+        st.table(table_df)
 
 
 def generate_files():

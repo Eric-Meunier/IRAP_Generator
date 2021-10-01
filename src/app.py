@@ -14,6 +14,9 @@ from datetime import datetime
 import shutil
 import pythoncom
 
+months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
+          'November', 'December']
+
 
 def get_sheet_df(sheet_id):
     # global values_input, service
@@ -54,7 +57,6 @@ def get_sheet_df(sheet_id):
 
 
 def update_data():
-
     def format_df(df):
         """
         Remove irrelevant columns, filter only IRAP comments, and add a IRAP hours column
@@ -119,7 +121,7 @@ def update_data():
         df.fillna('', inplace=True)
 
         # Add the description and IRAP hours
-        df = pd.DataFrame(df.apply(get_irap_info, axis=1).to_numpy())
+        df = pd.DataFrame.from_records(df.apply(get_irap_info, axis=1).to_numpy())
         total_hours = df.Hours.replace('', 0).astype(float).sum()
         df.Hours = df.apply(get_hours, axis=1)
 
@@ -272,11 +274,9 @@ sheet_id = st.sidebar.text_input("Timesheet ID", default_sheet_id)
 years = []
 for year in range(2020, datetime.today().year + 1):
     years.append(str(year))
-year = st.sidebar.selectbox('Year', years)
+year = st.sidebar.selectbox('Year', years, index=len(years) - 1)
 
 # Add dropdown options for month
-months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
-          'November', 'December']
 last_month = datetime.today().month - 1
 if last_month == 0:
     last_month = 12
@@ -291,17 +291,14 @@ if st.button('Update Data'):
 if st.button('Generate Files'):
     generate_files()
 
-# update_data()
-# generate_files()
-
 
 # if __name__ == '__main__':
-#     fg = FileGenerator()
-#
 #     sheet_id = '183TvCEIn3R9rsqCuseDtcGVtUVIPxO8a_fCg0iHlAhY'
-#     year = 2020
-#     month = 'November'
+#     year = 2021
+#     month = 'September'
 #     sheet_df = get_sheet_df(sheet_id)
+#     update_data()
+#     generate_files()
 
 
 
